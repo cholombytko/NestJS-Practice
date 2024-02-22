@@ -4,7 +4,7 @@ import { PasswordService } from './password.service';
 import { UserService } from 'src/user/user.service';
 import { IAuthData } from '../interfaces/auth-data.interface';
 import { UserAlreadyExistsException } from '../exceptions/user-already-exists.exception';
-import { UserNotExistsException } from '../exceptions/user-not-exists.exception';
+import { UserNotFoundException } from '../exceptions/user-not-found.exception';
 import { IncorrectPasswordException } from '../exceptions/incorrect-password.exception';
 
 @Injectable()
@@ -41,7 +41,7 @@ export class AuthService {
       username: signInData.username,
     });
 
-    if (!user) throw new UserNotExistsException();
+    if (!user) throw new UserNotFoundException();
 
     const isPasswordCorrect = await this.passwordService.compare(
       signInData.password,

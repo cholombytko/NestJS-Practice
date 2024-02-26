@@ -1,28 +1,35 @@
 import { Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
+import * as dotenv from 'dotenv';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entities/user.entity';
+import { AuthModule } from './auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
+dotenv.config();
 
 @Module({
   imports: [
     UserModule,
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRootAsync({
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('HOST'),
-        port: configService.get<number>('PORT'),
-        username: configService.get<string>('USERNAME'),
-        password: configService.get<string>('PASSWORD'),
-        database: configService.get<string>('DATABASE'),
-        entities: [User],
-        synchronize: true,
-      }),
-      inject: [ConfigService],
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET,
+      signOptions: {
+        expiresIn: +process.env.JWT_EXPIRATION_TIME,
+      },
     }),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.HOST,
+      port: +process.env.PORT,
+      username: process.env.USERNAME,
+      password: process.env.PASSWORD,
+      database: process.env.DATABASE,
+      entities: [User],
+      synchronize: true,
+    }),
+    AuthModule,
   ],
-  controllers: [],
-  providers: [],
 })
 export class AppModule {}
